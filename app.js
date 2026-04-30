@@ -45,6 +45,16 @@ const dataPanel = document.querySelector('.data-panel');
 const mobileOverlay = document.getElementById('mobile-overlay');
 const themeToggle = document.getElementById('theme-toggle');
 
+const btnAddText = document.getElementById('btn-add-text');
+const btnClearTexts = document.getElementById('btn-clear-texts');
+const textColorPicker = document.getElementById('text-color-picker');
+
+const sortAscBtn = document.getElementById('sort-asc');
+const sortDescBtn = document.getElementById('sort-desc');
+
+let customAnnotations = [];
+let textCounter = 0;
+
 // --- Initialization ---
 function init() {
     renderTable();
@@ -100,6 +110,51 @@ function setupEventListeners() {
         }
     });
 
+    // Excel-like Keyboard Navigation
+    tableBody.addEventListener('keydown', (e) => {
+        if (e.target.tagName !== 'INPUT') return;
+
+        const currentInput = e.target;
+        const currentTd = currentInput.closest('td');
+        const currentRow = currentInput.closest('tr');
+        const allTds = Array.from(currentRow.children);
+        const cellIndex = allTds.indexOf(currentTd);
+
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const nextRow = currentRow.nextElementSibling;
+            if (nextRow) {
+                const nextInput = nextRow.children[cellIndex].querySelector('input');
+                if (nextInput) {
+                    nextInput.focus();
+                    nextInput.select();
+                }
+            } else if (e.key === 'Enter') {
+                // If last row and Enter is pressed, add new row
+                addRowBtn.click();
+                setTimeout(() => {
+                    const newRows = tableBody.querySelectorAll('tr');
+                    const lastRow = newRows[newRows.length - 1];
+                    const newInput = lastRow.children[cellIndex].querySelector('input');
+                    if (newInput) {
+                        newInput.focus();
+                        newInput.select();
+                    }
+                }, 10);
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prevRow = currentRow.previousElementSibling;
+            if (prevRow) {
+                const prevInput = prevRow.children[cellIndex].querySelector('input');
+                if (prevInput) {
+                    prevInput.focus();
+                    prevInput.select();
+                }
+            }
+        }
+    });
+
     // Handle row deletion
     tableBody.addEventListener('click', (e) => {
         const btn = e.target.closest('.delete-btn');
@@ -124,8 +179,44 @@ function setupEventListeners() {
 
     // Theme toggle
     themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.toggle('light-theme');
+        textColorPicker.value = isLight ? '#0f172a' : '#f0f4f8';
         updatePlot();
+    });
+
+    // Annotation Tools
+    btnAddText.addEventListener('click', () => {
+        const color = textColorPicker.value;
+        const xPos = currentResults.xBar !== undefined ? currentResults.xBar : 0;
+        const yPos = currentResults.yBar !== undefined ? currentResults.yBar : 0;
+
+        customAnnotations.push({
+            text: 'Text ' + (++textCounter),
+            x: xPos,
+            y: yPos,
+            showarrow: false,
+            font: { size: 16, color: color },
+            captureevents: true
+        });
+        updatePlot();
+    });
+
+    btnClearTexts.addEventListener('click', () => {
+        customAnnotations = [];
+        updatePlot();
+    });
+
+    // Sort table data
+    sortAscBtn.addEventListener('click', () => {
+        state.data.sort((a, b) => a.x - b.x);
+        renderTable();
+        updateAnalysis();
+    });
+
+    sortDescBtn.addEventListener('click', () => {
+        state.data.sort((a, b) => b.x - a.x);
+        renderTable();
+        updateAnalysis();
     });
 }
 
@@ -305,6 +396,15 @@ function updatePlot() {
     if (!currentResults.pts) return;
     const r = currentResults;
     const pts = r.pts;
+    
+    const plotDiv = document.getElementById('plot');
+    // Preserve shapes user has drawn
+    const existingShapes = (plotDiv.layout && plotDiv.layout.shapes) ? plotDiv.layout.shapes : [];
+    
+    // Preserve annotation modifications (like drag positions or text changes)
+    if (plotDiv.layout && plotDiv.layout.annotations) {
+        customAnnotations = plotDiv.layout.annotations;
+    }
 
     const xData = pts.map(p => p.x);
     const yData = pts.map(p => p.y);
@@ -420,12 +520,28 @@ function updatePlot() {
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { family: 'Inter, sans-serif' },
         margin: { t: 40, r: 20, b: 40, l: 50 },
-        legend: { font: { color: textColor }, bgcolor: isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }
+        legend: { font: { color: textColor }, bgcolor: isLight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' },
+        annotations: customAnnotations,
+        shapes: existingShapes
     };
 
-    const config = { responsive: true, displayModeBar: true };
+    const config = { 
+        responsive: true, 
+        displayModeBar: true,
+        edits: {
+            annotationPosition: true,
+            annotationText: true,
+            shapePosition: true
+        },
+        modeBarButtonsToAdd: [
+            'drawrect',
+            'drawopenpath',
+            'drawline',
+            'eraseshape'
+        ]
+    };
 
-    Plotly.newPlot('plot', traces, layout, config);
+    Plotly.react('plot', traces, layout, config);
 }
 
 // CSV Export/Import functionality

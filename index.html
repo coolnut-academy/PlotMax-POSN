@@ -100,8 +100,14 @@
                         <span class="label-text">Force Intercept = 0</span>
                     </label>
                 </div>
-
-                <div class="table-container">
+                <div class="table-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">Data Points</span>
+                    <div class="sort-actions" style="display: flex; gap: 0.5rem;">
+                        <button id="sort-asc" class="btn secondary btn-sm" title="Sort Table Ascending by X">Sort X ↑</button>
+                        <button id="sort-desc" class="btn secondary btn-sm" title="Sort Table Descending by X">Sort X ↓</button>
+                    </div>
+                </div>
+                <div class="table-container" style="margin-top: 0.5rem;">
                     <table id="data-table">
                         <thead>
                             <tr>
@@ -129,12 +135,21 @@
             <section class="panel plot-panel">
                 <div class="plot-container glass-card">
                     <div class="plot-header">
-                        <h2>Analysis Graph</h2>
-                        <div class="toggles">
-                            <label class="checkbox-label"><input type="checkbox" id="toggle-best" checked> Best Fit</label>
-                            <label class="checkbox-label"><input type="checkbox" id="toggle-max" checked> Max Slope</label>
-                            <label class="checkbox-label"><input type="checkbox" id="toggle-min" checked> Min Slope</label>
-                            <label class="checkbox-label"><input type="checkbox" id="toggle-centroid" checked> Centroid</label>
+                        <div class="plot-header-top">
+                            <h2>Analysis Graph</h2>
+                            <div class="toggles">
+                                <label class="checkbox-label"><input type="checkbox" id="toggle-best" checked> Best Fit</label>
+                                <label class="checkbox-label"><input type="checkbox" id="toggle-max" checked> Max Slope</label>
+                                <label class="checkbox-label"><input type="checkbox" id="toggle-min" checked> Min Slope</label>
+                                <label class="checkbox-label"><input type="checkbox" id="toggle-centroid" checked> Centroid</label>
+                            </div>
+                        </div>
+                        <div class="annotation-tools">
+                            <span class="tool-label">Graph Tools:</span>
+                            <input type="color" id="text-color-picker" value="#f0f4f8" title="Text Color" class="color-picker">
+                            <button id="btn-add-text" class="btn secondary btn-sm" title="Add Text Annotation">+ Add Text</button>
+                            <button id="btn-clear-texts" class="btn secondary btn-sm" title="Clear all Texts">Clear Texts</button>
+                            <span class="tool-label" style="margin-left: 10px; font-size: 0.75rem;">(Use tools on graph to draw boxes. Use 'Erase' tool to delete shapes.)</span>
                         </div>
                     </div>
                     <div id="plot"></div>
