@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSN Precision Linear Plotter | Physics Olympiad</title>
+    <meta name="description" content="High-precision linear plotting tool for Physics Olympiad (POSN) experiments. Features best, max, and min slope calculations with custom error bars.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- MathJax for LaTeX rendering -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="background-elements">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <button id="burger-menu" class="burger-menu" aria-label="Toggle Menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="header-titles">
+                    <h1>POSN <span>Precision Plotter</span></h1>
+                    <p>Advanced Linear Regression & Error Analysis</p>
+                </div>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div id="mobile-overlay" class="mobile-overlay"></div>
+
+        <main class="dashboard">
+            <!-- Left Panel: Data Input -->
+            <section class="panel data-panel">
+                <div class="panel-header">
+                    <h2>Data Configuration</h2>
+                    <div class="actions">
+                        <button id="import-csv" class="btn secondary">Import CSV</button>
+                        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                        <button id="export-csv" class="btn secondary">Export CSV</button>
+                    </div>
+                </div>
+
+                <div class="axis-config">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="x-label">X-Axis Label:</label>
+                            <input type="text" id="x-label" value="Time (t)">
+                        </div>
+                        <div class="input-group unit-group">
+                            <label for="x-unit">Unit:</label>
+                            <input type="text" id="x-unit" value="s">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="y-label">Y-Axis Label:</label>
+                            <input type="text" id="y-label" value="Position (x)">
+                        </div>
+                        <div class="input-group unit-group">
+                            <label for="y-unit">Unit:</label>
+                            <input type="text" id="y-unit" value="m">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="zoom-mode">Graph Scale Mode:</label>
+                    <select id="zoom-mode">
+                        <option value="zero-both" selected>Original: Start from 0 (ไม่ย่นกราฟ)</option>
+                        <option value="fit-both">Fit Both Axes (ย่น 2 แกน)</option>
+                        <option value="fit-x">Fit X Axis Only (ย่นเฉพาะแกน X)</option>
+                        <option value="fit-y">Fit Y Axis Only (ย่นเฉพาะแกน Y)</option>
+                    </select>
+                </div>
+
+                <div class="settings-group">
+                    <label class="toggle">
+                        <input type="checkbox" id="show-x-error" checked>
+                        <span class="slider"></span>
+                        <span class="label-text">Enable X Error Bars</span>
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" id="show-y-error" checked>
+                        <span class="slider"></span>
+                        <span class="label-text">Enable Y Error Bars</span>
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" id="force-zero">
+                        <span class="slider"></span>
+                        <span class="label-text">Force Intercept = 0</span>
+                    </label>
+                </div>
+
+                <div class="table-container">
+                    <table id="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th><span class="math">X</span></th>
+                                <th class="col-err-x"><span class="math">\(\Delta X\)</span></th>
+                                <th><span class="math">Y</span></th>
+                                <th class="col-err-y"><span class="math">\(\Delta Y\)</span></th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Rows generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button id="add-row" class="btn primary full-width">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add Data Point
+                </button>
+            </section>
+
+            <!-- Right Panel: Plot and Results -->
+            <section class="panel plot-panel">
+                <div class="plot-container glass-card">
+                    <div class="plot-header">
+                        <h2>Analysis Graph</h2>
+                        <div class="toggles">
+                            <label class="checkbox-label"><input type="checkbox" id="toggle-best" checked> Best Fit</label>
+                            <label class="checkbox-label"><input type="checkbox" id="toggle-max" checked> Max Slope</label>
+                            <label class="checkbox-label"><input type="checkbox" id="toggle-min" checked> Min Slope</label>
+                            <label class="checkbox-label"><input type="checkbox" id="toggle-centroid" checked> Centroid</label>
+                        </div>
+                    </div>
+                    <div id="plot"></div>
+                </div>
+
+                <div class="results-container">
+                    <div class="result-card best-fit">
+                        <h3>Best Fit Line</h3>
+                        <div class="equation" id="eq-best">\( y = 0.00x + 0.00 \)</div>
+                        <div class="details">
+                            <p>Slope (\(m_{best}\)): <span id="val-m-best">0</span></p>
+                            <p>Intercept (\(c_{best}\)): <span id="val-c-best">0</span></p>
+                            <p>\(R^2\): <span id="val-r2">0</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card max-fit">
+                        <h3>Max Slope Line</h3>
+                        <div class="equation" id="eq-max">\( y = 0.00x + 0.00 \)</div>
+                        <div class="details">
+                            <p>Slope (\(m_{max}\)): <span id="val-m-max">0</span></p>
+                            <p>Intercept (\(c_{max}\)): <span id="val-c-max">0</span></p>
+                        </div>
+                    </div>
+
+                    <div class="result-card min-fit">
+                        <h3>Min Slope Line</h3>
+                        <div class="equation" id="eq-min">\( y = 0.00x + 0.00 \)</div>
+                        <div class="details">
+                            <p>Slope (\(m_{min}\)): <span id="val-m-min">0</span></p>
+                            <p>Intercept (\(c_{min}\)): <span id="val-c-min">0</span></p>
+                        </div>
+                    </div>
+
+                    <div class="result-card extra-info">
+                        <h3>Statistical Analysis</h3>
+                        <div class="details">
+                            <p>Uncertainty in Slope (\(\Delta m\)): <span id="val-dm">0</span></p>
+                            <p>Uncertainty in Intercept (\(\Delta c\)): <span id="val-dc">0</span></p>
+                            <p>Centroid (\(\bar{x}, \bar{y}\)): <span id="val-centroid">(0, 0)</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card summary-card">
+                        <h3>Final Experimental Summary</h3>
+                        <div class="final-result">
+                            <p><strong>Slope (\(m \pm \Delta m\)):</strong> <br>
+                               <span id="final-slope" class="highlight-result">0.000 ± 0.000</span> <span id="unit-slope" class="unit"></span>
+                            </p>
+                            <p><strong>Y-Intercept (\(c \pm \Delta c\)):</strong> <br>
+                               <span id="final-intercept" class="highlight-result">0.000 ± 0.000</span> <span id="unit-intercept" class="unit"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="dev-badge-container">
+            <div class="dev-badge-wrapper">
+                <div class="dev-badge">
+                    <div class="dev-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></svg>
+                    </div>
+                    <div class="dev-info">
+                        <span class="dev-title">Crafted with Precision by</span>
+                        <span class="dev-name">Mr. Satit Siriwach</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
