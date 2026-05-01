@@ -26,6 +26,7 @@ let state = {
 // --- DOM Elements ---
 const tableBody = document.getElementById('table-body');
 const addRowBtn = document.getElementById('add-row');
+const manualPlotBtn = document.getElementById('manual-plot');
 const xLabelInput = document.getElementById('x-label');
 const xUnitInput = document.getElementById('x-unit');
 const yLabelInput = document.getElementById('y-label');
@@ -67,6 +68,21 @@ function setupEventListeners() {
         state.data.push({ id: state.nextId++, x: 0, dx: 0.1, y: 0, dy: 0.1 });
         renderTable();
         updateAnalysis();
+    });
+
+    manualPlotBtn.addEventListener('click', () => {
+        // Manually trigger analysis and plotting
+        updateAnalysis();
+        
+        // Visual feedback to show it worked
+        const originalText = manualPlotBtn.innerHTML;
+        manualPlotBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Plotted!`;
+        manualPlotBtn.classList.add('success');
+        
+        setTimeout(() => {
+            manualPlotBtn.innerHTML = originalText;
+            manualPlotBtn.classList.remove('success');
+        }, 1500);
     });
 
     xLabelInput.addEventListener('input', (e) => { state.config.xLabel = e.target.value; updatePlot(); });
@@ -250,9 +266,6 @@ function updateAnalysis() {
     const pts = state.data.filter(p => !isNaN(p.x) && !isNaN(p.y));
     if (pts.length < 2) return; // Need at least 2 points
 
-    // Sort by X
-    pts.sort((a, b) => a.x - b.x);
-
     const N = pts.length;
     let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
 
@@ -291,14 +304,14 @@ function updateAnalysis() {
     const dm_stats = Math.abs(mBest) * Math.sqrt((1/r2 - 1)/(N-2));
     const dc_stats = dm_stats * Math.sqrt(sumX2 / N); // Approximate
 
-    // POSN Max/Min Slope Method (using extreme points and error bars)
-    // First point
-    const p1 = pts[0];
+    // POSN Max/Min Slope Method (using extreme X points and their error bars)
+    // Find point with lowest X and highest X
+    const p1 = pts.reduce((minP, p) => p.x < minP.x ? p : minP, pts[0]);
+    const pn = pts.reduce((maxP, p) => p.x > maxP.x ? p : maxP, pts[0]);
+
     const eX1 = state.config.showXError ? p1.dx : 0;
     const eY1 = state.config.showYError ? p1.dy : 0;
     
-    // Last point
-    const pn = pts[N - 1];
     const eXn = state.config.showXError ? pn.dx : 0;
     const eYn = state.config.showYError ? pn.dy : 0;
 

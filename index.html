@@ -124,11 +124,16 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <button id="add-row" class="btn primary full-width">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    Add Data Point
-                </button>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button id="add-row" class="btn secondary" style="flex: 1; padding: 0.75rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Data Point
+                    </button>
+                    <button id="manual-plot" class="btn primary" style="flex: 1; padding: 0.75rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        Plot Graph
+                    </button>
+                </div>
             </section>
 
             <!-- Resizer Handle -->
