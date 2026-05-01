@@ -371,10 +371,48 @@ function updateAnalysis() {
     updatePlot();
 }
 
+function formatPhysicsResult(val, err) {
+    const rawValStr = isFinite(val) ? parseFloat(val.toPrecision(5)).toString() : "∞";
+    const rawErrStr = isFinite(err) ? parseFloat(err.toPrecision(5)).toString() : "∞";
+
+    if (!isFinite(val) || !isFinite(err)) return { main: formatNum(val), err: formatNum(err), rawMain: rawValStr, rawErr: rawErrStr };
+    if (err === 0 || Math.abs(err) < 1e-12) return { main: formatNum(val), err: "0.000", rawMain: rawValStr, rawErr: "0.000" };
+
+    const placeValue = Math.floor(Math.log10(Math.abs(err)));
+    let roundedErr = Math.round(err / Math.pow(10, placeValue)) * Math.pow(10, placeValue);
+    
+    // Recalculate place value in case of rounding up (e.g. 0.099 -> 0.1)
+    const newPlaceValue = Math.floor(Math.log10(Math.abs(roundedErr)));
+    let decimals = newPlaceValue < 0 ? -newPlaceValue : 0;
+    
+    let roundedMain;
+    let mainStr, errStr;
+    
+    if (newPlaceValue < 0) {
+        const factor = Math.pow(10, decimals);
+        roundedMain = Math.round(val * factor) / factor;
+        mainStr = roundedMain.toFixed(decimals);
+        errStr = roundedErr.toFixed(decimals);
+    } else {
+        const factor = Math.pow(10, newPlaceValue);
+        roundedMain = Math.round(val / factor) * factor;
+        mainStr = Math.round(roundedMain).toString();
+        errStr = Math.round(roundedErr).toString();
+    }
+
+    return {
+        main: mainStr,
+        err: errStr,
+        rawMain: rawValStr,
+        rawErr: rawErrStr
+    };
+}
+
 function formatNum(num) {
     if (num === null || num === undefined || isNaN(num)) return "0.000";
     if (!isFinite(num)) return "∞";
-    if (Math.abs(num) >= 100000) return num.toExponential(2);
+    if (num === 0) return "0.000";
+    if (Math.abs(num) >= 100000 || Math.abs(num) < 0.001) return num.toExponential(3);
     return num.toFixed(3);
 }
 
@@ -409,10 +447,16 @@ function updateDOMResults() {
     document.getElementById('val-dxint').innerText = "±" + formatNum(r.dxInt);
     document.getElementById('val-centroid').innerText = `(${formatNum(r.xBar)}, ${formatNum(r.yBar)})`;
 
-    // Final Experimental Summary
-    document.getElementById('final-slope').innerText = `${formatNum(r.mBest)} ± ${formatNum(r.dm)}`;
-    document.getElementById('final-intercept').innerText = `${formatNum(r.cBest)} ± ${formatNum(r.dc)}`;
-    document.getElementById('final-xintercept').innerText = `${formatNum(r.xIntBest)} ± ${formatNum(r.dxInt)}`;
+    // Final Experimental Summary with Physics Sig Fig Rules
+    const finalSlope = formatPhysicsResult(r.mBest, r.dm);
+    const finalIntercept = formatPhysicsResult(r.cBest, r.dc);
+    const finalXIntercept = formatPhysicsResult(r.xIntBest, r.dxInt);
+
+    const faintStyle = `style="font-size: 0.65em; color: var(--text-muted); opacity: 0.7; margin-left: 0.5rem; font-weight: normal;"`;
+
+    document.getElementById('final-slope').innerHTML = `${finalSlope.main} ± ${finalSlope.err} <span ${faintStyle}>(raw: ${finalSlope.rawMain} ± ${finalSlope.rawErr})</span>`;
+    document.getElementById('final-intercept').innerHTML = `${finalIntercept.main} ± ${finalIntercept.err} <span ${faintStyle}>(raw: ${finalIntercept.rawMain} ± ${finalIntercept.rawErr})</span>`;
+    document.getElementById('final-xintercept').innerHTML = `${finalXIntercept.main} ± ${finalXIntercept.err} <span ${faintStyle}>(raw: ${finalXIntercept.rawMain} ± ${finalXIntercept.rawErr})</span>`;
 
     // Units
     const xUnit = state.config.xUnit.trim();
