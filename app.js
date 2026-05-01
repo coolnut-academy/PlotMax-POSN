@@ -439,29 +439,37 @@ function updatePlot() {
     const xErr = state.config.showXError ? pts.map(p => p.dx) : null;
     const yErr = state.config.showYError ? pts.map(p => p.dy) : null;
 
-    const minX = Math.min(...xData) - (xErr ? Math.max(...xErr) : 0) - 1;
-    const maxX = Math.max(...xData) + (xErr ? Math.max(...xErr) : 0) + 1;
-    
-    let lineStartX = minX;
-    let lineEndX = maxX;
+    // Calculate dynamic padding based on data spread (not hardcoded 1)
+    let dMinX = Math.min(...xData);
+    let dMaxX = Math.max(...xData);
+    if (state.config.showXError && xErr) {
+        dMinX = Math.min(...xData.map((x, i) => x - xErr[i]));
+        dMaxX = Math.max(...xData.map((x, i) => x + xErr[i]));
+    }
+    const xPad = Math.max((dMaxX - dMinX) * 0.05, 1e-9);
 
-    if (state.config.zoomMode === 'zero-both' || state.config.zoomMode === 'fit-y') {
-        // X axis starts at 0, so line should extend to 0 to show Y-intercept
+    let lineStartX = dMinX - xPad;
+    let lineEndX = dMaxX + xPad;
+
+    const shouldShowYInt = state.config.zoomMode === 'zero-both' || state.config.zoomMode === 'fit-y' || state.config.forceZero;
+    const shouldShowXInt = state.config.zoomMode === 'zero-both' || state.config.zoomMode === 'fit-x' || state.config.forceZero;
+
+    if (shouldShowYInt) {
+        // Extend line to x=0 to show Y-intercept
         if (lineStartX > 0) lineStartX = 0;
         if (lineEndX < 0) lineEndX = 0;
     }
 
-    // Extend line to cross x-axis to show X-intercept
-    if (!state.config.forceZero) {
-        const dataWidth = Math.max(maxX - minX, 1);
+    if (shouldShowXInt && !state.config.forceZero) {
+        // Extend line to cross x-axis to show X-intercept
+        const dataWidth = Math.max(dMaxX - dMinX, 1e-9);
         const intercepts = [r.xIntBest, r.xIntMaxLine, r.xIntMinLine].filter(v => v !== undefined && !isNaN(v) && isFinite(v) && Math.abs(v) < Math.max(10000, 10 * dataWidth));
         
         if (intercepts.length > 0) {
             const minInt = Math.min(...intercepts);
             const maxInt = Math.max(...intercepts);
-            
-            if (minInt < lineStartX) lineStartX = minInt - dataWidth * 0.05;
-            if (maxInt > lineEndX) lineEndX = maxInt + dataWidth * 0.05;
+            if (minInt < lineStartX) lineStartX = minInt;
+            if (maxInt > lineEndX) lineEndX = maxInt;
         }
     }
 
@@ -656,14 +664,15 @@ document.getElementById('export-csv').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "posn_data.csv");
+    link.href = url;
+    link.download = "posn_data.csv";
+    link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    // Clean up memory
-    setTimeout(() => URL.revokeObjectURL(url), 100);
+    // Clean up memory after a safe delay to ensure browser completes download
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
 });
 
 // Start the application
