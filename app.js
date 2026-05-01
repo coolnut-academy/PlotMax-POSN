@@ -675,5 +675,50 @@ document.getElementById('export-csv').addEventListener('click', () => {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
 });
 
+// --- Resizer Logic ---
+const resizer = document.getElementById('dragMe');
+const dashboard = document.getElementById('dashboard');
+let isDragging = false;
+
+if (resizer && dashboard) {
+    resizer.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        resizer.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const containerRect = dashboard.getBoundingClientRect();
+        const leftOffset = containerRect.left;
+        let newWidth = e.clientX - leftOffset;
+        
+        // Boundaries
+        const minWidth = 350;
+        const maxWidth = containerRect.width - 400; // Leave at least 400px for the right panel
+        
+        if (newWidth < minWidth) newWidth = minWidth;
+        if (newWidth > maxWidth) newWidth = maxWidth;
+        
+        dashboard.style.setProperty('--left-panel-width', `${newWidth}px`);
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            resizer.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            
+            // Force Plotly to relayout
+            if (window.Plotly) {
+                Plotly.Plots.resize(document.getElementById('plot'));
+            }
+        }
+    });
+}
+
 // Start the application
 init();

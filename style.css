@@ -175,14 +175,45 @@ body.light-theme .theme-toggle .moon-icon { display: block; }
 /* Layout */
 .dashboard {
     display: grid;
-    grid-template-columns: 480px 1fr;
-    gap: 2rem;
+    grid-template-columns: var(--left-panel-width, 480px) 16px 1fr;
+    gap: 1rem;
     align-items: start;
+}
+
+.resizer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: stretch;
+    cursor: col-resize;
+    user-select: none;
+    transition: background 0.2s;
+    border-radius: 8px;
+}
+
+.resizer:hover, .resizer.dragging {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.resizer-line {
+    width: 4px;
+    height: 40px;
+    background: var(--border-color);
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.resizer:hover .resizer-line, .resizer.dragging .resizer-line {
+    background: var(--primary);
 }
 
 @media (max-width: 1024px) {
     .dashboard {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+    }
+    
+    .resizer {
+        display: none;
     }
     
     .burger-menu {

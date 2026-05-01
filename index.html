@@ -38,9 +38,9 @@
 
         <div id="mobile-overlay" class="mobile-overlay"></div>
 
-        <main class="dashboard">
+        <main class="dashboard" id="dashboard">
             <!-- Left Panel: Data Input -->
-            <section class="panel data-panel">
+            <section class="panel data-panel" id="data-panel">
                 <div class="panel-header">
                     <h2>Data Configuration</h2>
                     <div class="actions">
@@ -130,6 +130,11 @@
                     Add Data Point
                 </button>
             </section>
+
+            <!-- Resizer Handle -->
+            <div class="resizer" id="dragMe" title="Drag to resize">
+                <div class="resizer-line"></div>
+            </div>
 
             <!-- Right Panel: Plot and Results -->
             <section class="panel plot-panel">
