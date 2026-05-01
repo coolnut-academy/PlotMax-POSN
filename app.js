@@ -608,16 +608,25 @@ fileInput.addEventListener('change', (e) => {
         
         if (lines.length > 1) {
             const newData = [];
+            // Auto-detect delimiter: some regions use semicolon in Excel
+            const delimiter = lines[0].includes(';') ? ';' : ',';
+            
             for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split(',').map(c => parseFloat(c.trim()));
+                const cols = lines[i].split(delimiter).map(c => parseFloat(c.trim()));
+                let row = { id: state.nextId++, x: 0, dx: 0, y: 0, dy: 0 };
+                
                 if (cols.length >= 4) {
-                    newData.push({
-                        id: state.nextId++,
-                        x: isNaN(cols[0]) ? 0 : cols[0],
-                        dx: isNaN(cols[1]) ? 0 : cols[1],
-                        y: isNaN(cols[2]) ? 0 : cols[2],
-                        dy: isNaN(cols[3]) ? 0 : cols[3]
-                    });
+                    row.x = isNaN(cols[0]) ? 0 : cols[0];
+                    row.dx = isNaN(cols[1]) ? 0 : cols[1];
+                    row.y = isNaN(cols[2]) ? 0 : cols[2];
+                    row.dy = isNaN(cols[3]) ? 0 : cols[3];
+                    newData.push(row);
+                } else if (cols.length >= 2) {
+                    // Fallback for simple X, Y data
+                    row.x = isNaN(cols[0]) ? 0 : cols[0];
+                    row.y = isNaN(cols[1]) ? 0 : cols[1];
+                    if (cols.length >= 3) row.dy = isNaN(cols[2]) ? 0 : cols[2]; // X, Y, dY
+                    newData.push(row);
                 }
             }
             if (newData.length > 0) {
@@ -625,8 +634,10 @@ fileInput.addEventListener('change', (e) => {
                 renderTable();
                 updateAnalysis();
             } else {
-                alert("No valid data found in CSV. Expected format: X, dX, Y, dY");
+                alert("No valid data found in CSV. Expected format: X, dX, Y, dY or X, Y");
             }
+        } else {
+            alert("CSV is empty or missing headers.");
         }
     };
     reader.readAsText(file);
@@ -634,18 +645,25 @@ fileInput.addEventListener('change', (e) => {
 });
 
 document.getElementById('export-csv').addEventListener('click', () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "X,dX,Y,dY\n";
+    let csvContent = "X,dX,Y,dY\n";
     state.data.forEach(row => {
         csvContent += `${row.x},${row.dx},${row.y},${row.dy}\n`;
     });
-    const encodedUri = encodeURI(csvContent);
+    
+    // Use Blob and object URL for robust export (avoids URI string limits)
+    // Add BOM (\ufeff) to help Excel recognize UTF-8 encoding
+    const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", "posn_data.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up memory
+    setTimeout(() => URL.revokeObjectURL(url), 100);
 });
 
 // Start the application
