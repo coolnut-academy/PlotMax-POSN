@@ -324,10 +324,30 @@ function updateAnalysis() {
     const dm = Math.abs(mMax - mMin) / 2;
     const dc = Math.abs(cMax - cMin) / 2;
 
+    // X-Intercepts
+    const slopeThreshold = 1e-10;
+    const getXInt = (m, c) => {
+        if (state.config.forceZero) return 0;
+        if (Math.abs(m) < slopeThreshold) return Infinity;
+        return -c / m;
+    };
+
+    const xIntBest = getXInt(mBest, cBest);
+    const xIntMaxLine = getXInt(mMax, cMax);
+    const xIntMinLine = getXInt(mMin, cMin);
+    
+    let dxInt = 0;
+    if (isFinite(xIntMaxLine) && isFinite(xIntMinLine)) {
+        dxInt = Math.abs(xIntMaxLine - xIntMinLine) / 2;
+    } else {
+        dxInt = Infinity;
+    }
+
     currentResults = {
         mBest, cBest, r2,
         mMax, cMax,
         mMin, cMin,
+        xIntBest, xIntMaxLine, xIntMinLine, dxInt,
         xBar, yBar,
         dm, dc,
         dm_stats, dc_stats,
@@ -339,7 +359,9 @@ function updateAnalysis() {
 }
 
 function formatNum(num) {
-    if (isNaN(num)) return "0.000";
+    if (num === null || num === undefined || isNaN(num)) return "0.000";
+    if (!isFinite(num)) return "∞";
+    if (Math.abs(num) >= 100000) return num.toExponential(2);
     return num.toFixed(3);
 }
 
@@ -355,24 +377,29 @@ function updateDOMResults() {
 
     document.getElementById('val-m-best').innerText = formatNum(r.mBest);
     document.getElementById('val-c-best').innerText = formatNum(r.cBest);
+    document.getElementById('val-xint-best').innerText = formatNum(r.xIntBest);
     document.getElementById('val-r2').innerText = formatNum(r.r2);
     document.getElementById('eq-best').innerText = formatEq(r.mBest, r.cBest);
 
     document.getElementById('val-m-max').innerText = formatNum(r.mMax);
     document.getElementById('val-c-max').innerText = formatNum(r.cMax);
+    document.getElementById('val-xint-max').innerText = formatNum(r.xIntMaxLine);
     document.getElementById('eq-max').innerText = formatEq(r.mMax, r.cMax);
 
     document.getElementById('val-m-min').innerText = formatNum(r.mMin);
     document.getElementById('val-c-min').innerText = formatNum(r.cMin);
+    document.getElementById('val-xint-min').innerText = formatNum(r.xIntMinLine);
     document.getElementById('eq-min').innerText = formatEq(r.mMin, r.cMin);
 
     document.getElementById('val-dm').innerText = "±" + formatNum(r.dm_stats);
     document.getElementById('val-dc').innerText = "±" + formatNum(r.dc_stats);
+    document.getElementById('val-dxint').innerText = "±" + formatNum(r.dxInt);
     document.getElementById('val-centroid').innerText = `(${formatNum(r.xBar)}, ${formatNum(r.yBar)})`;
 
     // Final Experimental Summary
     document.getElementById('final-slope').innerText = `${formatNum(r.mBest)} ± ${formatNum(r.dm)}`;
     document.getElementById('final-intercept').innerText = `${formatNum(r.cBest)} ± ${formatNum(r.dc)}`;
+    document.getElementById('final-xintercept').innerText = `${formatNum(r.xIntBest)} ± ${formatNum(r.dxInt)}`;
 
     // Units
     const xUnit = state.config.xUnit.trim();
@@ -384,6 +411,7 @@ function updateDOMResults() {
 
     document.getElementById('unit-slope').innerText = slopeUnit;
     document.getElementById('unit-intercept').innerText = yUnit;
+    document.getElementById('unit-xintercept').innerText = xUnit;
 
     // Re-render MathJax
     if (window.MathJax) {
@@ -415,12 +443,29 @@ function updatePlot() {
     const maxX = Math.max(...xData) + (xErr ? Math.max(...xErr) : 0) + 1;
     
     let lineStartX = minX;
+    let lineEndX = maxX;
+
     if (state.config.zoomMode === 'zero-both' || state.config.zoomMode === 'fit-y') {
         // X axis starts at 0, so line should extend to 0 to show Y-intercept
         if (lineStartX > 0) lineStartX = 0;
+        if (lineEndX < 0) lineEndX = 0;
     }
 
-    const xLine = [lineStartX, maxX];
+    // Extend line to cross x-axis to show X-intercept
+    if (!state.config.forceZero) {
+        const dataWidth = Math.max(maxX - minX, 1);
+        const intercepts = [r.xIntBest, r.xIntMaxLine, r.xIntMinLine].filter(v => v !== undefined && !isNaN(v) && isFinite(v) && Math.abs(v) < Math.max(10000, 10 * dataWidth));
+        
+        if (intercepts.length > 0) {
+            const minInt = Math.min(...intercepts);
+            const maxInt = Math.max(...intercepts);
+            
+            if (minInt < lineStartX) lineStartX = minInt - dataWidth * 0.05;
+            if (maxInt > lineEndX) lineEndX = maxInt + dataWidth * 0.05;
+        }
+    }
+
+    const xLine = [lineStartX, lineEndX];
 
     const isLight = document.body.classList.contains('light-theme');
     const textColor = isLight ? '#0f172a' : '#f0f4f8';
