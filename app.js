@@ -613,6 +613,7 @@ function updatePlot() {
     }
 
     const layout = {
+        dragmode: 'pan', // Default to pan on click-and-drag
         title: { text: 'Linear Analysis', font: { color: textColor } },
         xaxis: { 
             title: `${state.config.xLabel} ${state.config.xUnit ? `(${state.config.xUnit})` : ''}`.trim(), 
@@ -638,6 +639,7 @@ function updatePlot() {
     const config = { 
         responsive: true, 
         displayModeBar: true,
+        scrollZoom: true, // Enable mouse wheel & pinch to zoom
         edits: {
             annotationPosition: true,
             annotationText: true,
