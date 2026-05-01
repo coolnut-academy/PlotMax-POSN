@@ -1,70 +1,74 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/Status-Active-success.svg?style=for-the-badge&color=06b6d4" alt="Status">
-  <img src="https://img.shields.io/badge/Platform-Web-blue.svg?style=for-the-badge&color=3b82f6" alt="Platform">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge&color=a855f7" alt="License">
+  <img src="https://img.shields.io/badge/Status-Active-success.svg?style=for-the-badge&color=06b6d4" alt="สถานะ">
+  <img src="https://img.shields.io/badge/Platform-Web-blue.svg?style=for-the-badge&color=3b82f6" alt="แพลตฟอร์ม">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge&color=a855f7" alt="ไลเซนส์">
 </div>
 
 # 🌌 POSN Precision Plotter
 
-**Advanced Linear Regression & Error Analysis Platform**  
-Designed specifically for high-accuracy physics experiments and Physics Olympiad (POSN) laboratories.
+**แพลตฟอร์มวิเคราะห์กราฟเชิงเส้นและค่าความคลาดเคลื่อนขั้นสูง**  
+ออกแบบมาโดยเฉพาะสำหรับการทดลองฟิสิกส์ที่ต้องการความแม่นยำสูง และการวิเคราะห์ข้อมูลในระดับค่ายฟิสิกส์โอลิมปิก (สอวน.)
 
 ---
 
-## ⚡ Core Features
+## ⚡ ฟีเจอร์หลัก (Core Features)
 
-- **Standard OLS & POSN Max/Min Slopes:** Automatically calculates the Best Fit, Max Slope, and Min Slope lines passing through the centroid.
-- **Dynamic Error Bars:** Supports independent error configurations ($\Delta X$, $\Delta Y$) for each data point.
-- **Real-Time Data Engine:** Graph recalculates and redraws instantly as you type.
-- **Data Sorting Engine:** Sort rows automatically by $X$ ascending or descending to maintain matrix structure without messing up the geometry.
-- **Advanced Annotation Tools:**
-  - Inject custom text onto the canvas dynamically.
-  - Draw bounding boxes or lines for visualizing uncertainty rectangles.
-  - Delete tools via the built-in Plotly modebar.
-- **Responsive & Adaptive:** Fully responsive glassmorphism UI with one-click **Dark / Light Mode** switching.
-- **I/O Operations:** Import and Export capabilities via standard `.csv` files.
-
----
-
-## 🚀 Usage Guide
-
-### 1. Data Configuration & Input
-- Enter your $X$ and $Y$ values in the Data Points table. 
-- You can add specific uncertainties ($\Delta X$, $\Delta Y$) for each individual point. 
-- If your data is out of order, use the **`Sort X ↑`** or **`Sort X ↓`** buttons to sort the entire table dynamically.
-- Modify the axis labels and units; the system will automatically format the final units for the Slope and Y-Intercept.
-
-### 2. Toggling Modes
-- **Force Intercept = 0:** Forces the regression line to pass through the origin $(0,0)$.
-- **Graph Scale Mode:** Choose between 4 viewport modes:
-  - *Original (Start from 0):* Locks the axes to $(0,0)$ to visualize intercepts clearly.
-  - *Fit Both Axes:* Auto-scales X and Y to fit the data points precisely.
-  - *Fit X / Fit Y:* Auto-scales one axis while locking the other to $0$.
-
-### 3. Annotations & Drawing (Graph Tools)
-- **Adding Text:** 
-  1. Pick a color from the **Color Picker**.
-  2. Click **`+ Add Text`**. 
-  3. A new text element will appear on the graph. You can **drag** it anywhere and **click the text** to edit the string.
-- **Drawing Shapes:** Hover over the graph to reveal the top-right toolbar. Select the **Rectangle / Line** tool to draw bounding boxes for Max/Min slopes.
-- **Erasing:** Select the **Eraser** tool in the graph toolbar and click on any shape to remove it. (For text, use the **Clear Texts** button).
-
-### 4. Import / Export (CSV)
-- **Export:** Click `Export CSV` to save your table locally.
-- **Import:** Click `Import CSV` and select a correctly formatted file (Columns: `X, dX, Y, dY`). The graph will update immediately.
+- **วิเคราะห์จุดตัดแกนแบบครอบคลุม:** รองรับทั้งการคำนวณหาจุดตัดแกน Y และ **จุดตัดแกน X ($X_{int}$)** พร้อมคำนวณค่าความคลาดเคลื่อน ($\Delta X_{int}$) จากวิธี Extreme Slope อย่างสมบูรณ์แบบ
+- **วาดเส้น Best, Max, Min อัตโนมัติ:** คำนวณความชันเส้นแนวโน้ม (Best Fit), ความชันสูงสุด (Max Slope) และความชันต่ำสุด (Min Slope) ตามหลักสถิติ OLS และหลักสูตร สอวน. โดยเคารพลำดับชุดข้อมูลเดิมของผู้ใช้ 100% ไม่มีการแอบจัดเรียงข้อมูลเอง
+- **ค่าความคลาดเคลื่อนอิสระ (Error Bars):** สามารถระบุค่า Error ($\Delta X$, $\Delta Y$) ของข้อมูลแต่ละจุดแยกจากกันได้อย่างอิสระ
+- **วาดกราฟอัจฉริยะแบบ Adaptive:** กราฟสามารถยืดเส้นขยายไปจนถึงจุดตัดแกนได้อัตโนมัติเพื่อให้เห็นภาพชัดเจน และมีระบบจำกัดพื้นที่ (Padding 5%) ช่วยไม่ให้จุดข้อมูลไปกระจุกตัวอยู่ตรงกลางกราฟในโหมดย่นกราฟ
+- **โครงสร้างปรับขนาดได้ (Drag-to-Resize):** สำหรับหน้าจอขนาดใหญ่ คุณสามารถคลิกเมาส์ค้างที่เส้นคั่นกลาง แล้วลากเพื่อขยาย/ลดขนาดหน้าต่างข้อมูลและหน้าต่างกราฟได้อย่างอิสระ
+- **ระบบ CSV นำเข้า-ส่งออกทรงพลัง:** ป้องกันปัญหาภาษาไทยเพี้ยนใน Excel ด้วยระบบ BOM (UTF-8) ตรวจจับตัวคั่นข้อมูล (`,` หรือ `;`) อัตโนมัติ และรองรับทั้งรูปแบบไฟล์ 4 คอลัมน์ ($X, \Delta X, Y, \Delta Y$) หรือแบบย่อ 2 คอลัมน์ ($X, Y$)
+- **ระบบจัดการแถวข้อมูล:** เคารพข้อมูลดิบของคุณเต็มที่ และถ้าอยากให้ข้อมูลเรียงสวยงามก็มีปุ่ม **`Sort X ↑`** ให้กด เพื่อเรียงแถวข้อมูลอย่างเป็นระบบ (โดยที่ค่า $(x,y)$ จะเกาะติดกันเสมอ)
+- **เครื่องมือวาดและจดบันทึกบนกราฟ:** สามารถแทรกกล่องข้อความ เปลี่ยนสี พิมพ์สมการ หรือตีกรอบพื้นที่ความคลาดเคลื่อน (Bounding Boxes) ทับลงบนกราฟผ่านเครื่องมือด้านขวาบนได้ทันที
+- **ดีไซน์กระจก (Glassmorphism):** สวยงาม ทันสมัย ใช้งานลื่นไหล และรองรับการสลับโหมด **Dark / Light Mode** ในคลิกเดียว
 
 ---
 
-## 🛠️ Technology Stack
+## 🚀 คู่มือการใช้งาน
 
-- **Frontend:** HTML5, CSS3 (Vanilla, Glassmorphism Aesthetics)
+### 1. การป้อนข้อมูล (Data Configuration)
+- พิมพ์ค่า $X$ และ $Y$ ลงในตารางข้อมูล 
+- สามารถเพิ่มค่าความคลาดเคลื่อน ($\Delta X$, $\Delta Y$) ของข้อมูลแต่ละจุดได้
+- ระบบจะคำนวณและวาดกราฟให้คุณดูแบบ Real-time แต่ถ้าคุณไม่มั่นใจ สามารถกดปุ่ม **`Plot Graph`** ด้านล่างเพื่อสั่งวาดกราฟใหม่ได้ตลอดเวลา
+- หากต้องการเรียงลำดับข้อมูล สามารถกดปุ่ม **`Sort X ↑`** หรือ **`Sort X ↓`** ที่หัวตาราง
+- เมื่อตั้งชื่อแกนและหน่วย ระบบจะนำไปเขียนกำกับบนกราฟ และแสดงเป็นหน่วยของความชันให้แบบอัตโนมัติ
+
+### 2. โหมดการแสดงผลของกราฟ (Toggling Modes)
+- **Force Intercept = 0:** บังคับให้กราฟเส้นแนวโน้มตัดผ่านจุดกำเนิด $(0,0)$ เสมอ
+- **โหมดมุมมองกราฟ (Graph Scale Mode):** มีให้เลือก 4 แบบ:
+  - *Start from 0:* ล็อกกราฟให้ออกสตาร์ทที่ $(0,0)$ เสมอ เพื่อให้เห็นระยะจุดตัดแกนชัดๆ
+  - *Fit Both Axes (ย่น 2 แกน):* ซูมกราฟแบบลึกสุดใจ เพื่อตีกรอบโชว์เฉพาะจุดข้อมูลของคุณให้ใหญ่ที่สุด
+  - *Fit X / Fit Y:* ซูมพอดีกับข้อมูลเฉพาะแกนใดแกนหนึ่ง ส่วนอีกแกนให้ล็อกไว้ที่ 0
+
+### 3. การจดบันทึกและวาดรูป (Annotations & Drawing)
+- **วิธีแทรกข้อความ:** 
+  1. เลือกสีตัวอักษรจากหลอดสี (Color Picker)
+  2. กดปุ่ม **`+ Add Text`**
+  3. ข้อความจะโผล่ขึ้นมาบนกราฟ สามารถใช้เมาส์ **ลากไปวางตรงไหนก็ได้** และ **คลิกที่ตัวอักษรเพื่อแก้ไขคำ**
+- **วาดกล่อง/เส้น:** นำเมาส์ไปชี้ที่หน้าต่างกราฟ จะมีแถบเครื่องมือโผล่มามุมขวาบน เลือกเครื่องมือวาดทรงสี่เหลี่ยม (Rectangle) หรือเส้นตรง (Line) เพื่อนำมาตีกรอบขอบเขต Error บนกราฟได้เลย
+- **วิธียางลบ:** เลือกไอคอนยางลบ (Eraser) บนแถบเครื่องมือ แล้วไปคลิกที่รูปทรงนั้นๆ เพื่อลบทิ้ง (ส่วนข้อความ ให้ใช้ปุ่ม **Clear Texts** บนแผงควบคุม)
+
+### 4. การจัดการหน้าต่าง (Layout Customization)
+- สำหรับผู้ใช้งานบน Desktop หรือ Tablet จอใหญ่ จะมี **เส้นคั่นแนวตั้ง** อยู่ระหว่างกล่องป้อนข้อมูลและกล่องกราฟ
+- คุณสามารถคลิกเมาส์ค้างที่เส้นนี้ แล้วลากซ้าย-ขวา เพื่อขยายพื้นที่ใช้งานให้เหมาะสมกับความถนัดของคุณได้ทันที
+
+### 5. นำเข้า / ส่งออกตาราง (Import / Export CSV)
+- **Export CSV:** กดปุ่มนี้เพื่อดาวน์โหลดตารางของคุณเก็บไว้ในเครื่อง ปลอดภัยไร้ปัญหาไฟล์เสีย
+- **Import CSV:** โหลดข้อมูลเก่ากลับมาทำต่อได้เสมอ (ระบบฉลาดพอที่จะรองรับไฟล์ข้อมูลที่มีแค่ 2 คอลัมน์)
+
+---
+
+## 🛠️ โครงสร้างเทคโนโลยี (Tech Stack)
+
+- **Frontend:** HTML5, CSS3 (Vanilla, เน้นการออกแบบสไตล์ Glassmorphism)
 - **Logic / Math:** JavaScript (ES6+)
-- **Visualization:** [Plotly.js](https://plotly.com/javascript/)
-- **Typography / Equations:** [MathJax](https://www.mathjax.org/) (LaTeX rendering)
+- **Visualization:** [Plotly.js](https://plotly.com/javascript/) (มาพร้อมระบบ ResizeObserver อัจฉริยะ)
+- **Typography / Equations:** [MathJax](https://www.mathjax.org/) (สำหรับการเรนเดอร์สมการคณิตศาสตร์แบบ LaTeX)
 
 ---
 
 <div align="center">
   <sub><b>Crafted with Precision by <a href="https://github.com/coolnut-academy">Mr. Satit Siriwach</a></b></sub><br>
-  <sub><i>"Building the tools that power the next generation of physicists."</i></sub>
+  <sub><i>"สร้างสรรค์เครื่องมือ เพื่อขับเคลื่อนนักฟิสิกส์รุ่นต่อไป"</i></sub>
 </div>
